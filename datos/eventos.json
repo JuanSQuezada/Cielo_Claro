@@ -1,0 +1,109 @@
+{
+	"title": "EONET Events",
+	"description": "Natural events from EONET.",
+	"link": "https://eonet.gsfc.nasa.gov/api/v3/events",
+	"events": [
+		{
+			"id": "EONET_10656",
+			"title": "Wildfire in Ecuador 1021831",
+            "description": null,
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_10656",
+			"closed": null,
+				"categories": [
+					{
+					"id": "wildfires",
+					"title": "Wildfires"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "GDACS",
+					"url": "https://www.gdacs.org/report.aspx?eventtype=WF&eventid=1021831"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": null,
+					"magnitudeUnit": null,
+					"date": "2024-08-23T19:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -79.363491999281592, -4.3692628843535566 ]
+							}
+
+						
+			]
+		},
+
+			{
+			"id": "EONET_4269",
+			"title": "Reventador Volcano, Ecuador",
+            "description": null,
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_4269",
+			"closed": null,
+				"categories": [
+					{
+					"id": "volcanoes",
+					"title": "Volcanoes"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "SIVolcano",
+					"url": "http://volcano.si.edu/volcano.cfm?vn=352010"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": null,
+					"magnitudeUnit": null,
+					"date": "2019-07-10T00:00:00Z",
+					"type": "Point", 
+							"coordinates": [ -77.65, -0.07 ]
+							}
+
+						
+			]
+		},
+
+			{
+			"id": "EONET_4156",
+			"title": "Sangay Volcano, Ecuador",
+            "description": null,
+			"link": "https://eonet.gsfc.nasa.gov/api/v3/events/EONET_4156",
+			"closed": null,
+				"categories": [
+					{
+					"id": "volcanoes",
+					"title": "Volcanoes"
+				}
+
+	    				],
+    			"sources": [
+					{
+					"id": "SIVolcano",
+					"url": "http://volcano.si.edu/volcano.cfm?vn=352090"
+				}
+
+						
+			],
+					"geometry": [
+					{
+							"magnitudeValue": null,
+					"magnitudeUnit": null,
+					"date": "2019-03-26T09:19:10Z",
+					"type": "Point", 
+							"coordinates": [ -78.341, -2.005 ]
+							}
+
+						
+			]
+		}
+
+		]
+}
