@@ -6,6 +6,11 @@ export const COORDENADAS_LATACUNGA = {
   lon: -78.62,
 };
 
+export const COORDENADAS_AEROPUERTOS: Record<string, { lat: number; lon: number }> = {
+  SELT: { lat: -0.9077, lon: -78.6155 },
+  SEQM: { lat: -0.1292, lon: -78.3575 },
+};
+
 export const USER_AGENT = "CieloClaro/1.0";
 
 export const CACHE_METAR_SEGUNDOS = 600;

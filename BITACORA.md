@@ -117,3 +117,64 @@ y cómo correrlo.
 **Resumen:** `npm run build` falló la primera vez porque Next.js 16 ya no permite `ssr: false` en `next/dynamic` dentro de un Server Component (`app/page.tsx`); se movió esa lógica a un wrapper cliente dedicado, `components/MapaEventosDinamico.tsx`. También se corrigió un warning de Turbopack sobre la raíz del workspace agregando `turbopack.root` en `next.config.ts`. Tras eso, `npm run build` y `npx tsc --noEmit` pasan sin errores. Se verificó en el navegador (servidor `next dev`): METAR, semáforo, mapa (Leaflet) y gráfico (Recharts) cargan datos reales; se probó `POST /api/clasificar` con una foto real vía `curl`, respondiendo `200 OK` con las 4 predicciones ordenadas. Layout responsivo confirmado (todo en una sola columna, se adapta a pantallas angostas). Se limpiaron los SVG de ejemplo que trae `create-next-app` por defecto (no se usaban). Se escribió este `README.md`.
 
 ---
+
+## Paso 7 — Rediseño UI/UX estilo "panel de operaciones ATC"
+
+**Prompt:**
+```
+ya lo revisé me parece muy buen producto para tan poco tiempo, especifícame que tiempo te tardaste
+en cada tarea en una tabla comparativa, y cuál fue la tarea que más te demoró, ya tengo en enlace
+del proyecto de github pero antes de eso lo que necesito es que me mejores la interfaz de usuario,
+que se vea algo bien diseñado que esté al nivel de la institución, elementos de UX/UI mejores, que
+se vea más interactivo y que tenga más datos de información en el panel en la parte de eventos
+naturales no sé que tienes puesto por que la verdad solo veo lo de la captura de la imagen que te
+compartí y no me da nada de información que me sirva, recuerda que quienes van a ver esto son
+Aerocontroladores por tanto básate en algun producto de calidad osea algo que se vean radares,
+mejores mapas más info y diagramas etc
+```
+
+**Resumen:** Se rediseñó el panel con un enfoque "operaciones aeronáuticas / radar ATC", priorizando la sección de eventos naturales que el usuario señaló como poco informativa (antes solo mostraba puntos de color sin datos). Cambios:
+- `lib/eonetCategorias.ts`: catálogo de 14 categorías EONET con etiqueta en español, color e ícono.
+- `lib/geo.ts`: distancia (haversine) y rumbo (punto cardinal de 16 direcciones) desde SELT hacia cada evento.
+- `lib/tiempo.ts`: reloj Zulu (UTC) en vivo, fecha corta en español y tiempo relativo ("hace X min/h/d/meses/años").
+- `lib/estadisticas.ts`: promedio/mínimo/máximo para las tarjetas de resumen del gráfico de clima.
+- `lib/tipos.ts`: `EventoEonet` extendido con `description`, `closed`, `sources` y `magnitudeValue`/`magnitudeUnit` (el endpoint ya los traía, solo faltaba tiparlos).
+- Sección de eventos reconstruida en 4 piezas: `components/Leyenda.tsx` (chips por categoría presente), `components/ListaEventos.tsx` (tarjetas con distancia/rumbo a SELT, tiempo relativo, enlace a la fuente original, ordenadas por cercanía), `components/MapaEventos.tsx` (reescrito: anillos de rango a 50/150/300 km alrededor de SELT, marcadores `divIcon` coloreados/con ícono por categoría que brillan al seleccionarse, mapa y lista sincronizados por estado) y `components/SeccionEventos.tsx` (orquestador cliente que hace el fetch una sola vez y coordina selección mapa↔lista).
+- `components/Encabezado.tsx`: ahora es un componente cliente con reloj Zulu en vivo (actualiza cada segundo), indicador de estado pulsante y badge "ATC OPS".
+- `components/TarjetaMetar.tsx`: de lista `<dl>` a grilla de tarjetas de datos con ícono por campo (viento, visibilidad, nubes, temperatura, altímetro).
+- `components/GraficoClima.tsx`: de `LineChart` a `AreaChart` con relleno degradado, más 4 tarjetas de estadísticas (viento prom./máx., humedad prom./mín.) calculadas con `lib/estadisticas.ts`.
+- `components/FotoCielo.tsx`: zona de carga con drag-and-drop real (antes solo `<input type="file">`); `components/BarrasPrediccion.tsx`: barras coloreadas por ranking con medalla 🏆 en la predicción principal.
+- `app/globals.css`: variable `--acento`, fondo de grilla tipo radar (`.radar-grid`), animación de pulso (`.pulso`) y un filtro CSS de inversión de color para oscurecer el mapa base.
+
+**Desviación respecto al plan original:** se probó primero con tiles oscuros de CARTO (`basemaps.cartocdn.com/dark_all`), pero al verificar en el navegador el mapa mostraba un watermark "REQUIRES api key" en vez de renderizar — CARTO empezó a exigir API key en su capa gratuita. Se cambió a tiles estándar de OpenStreetMap (sin key) con un filtro CSS (`invert + hue-rotate + brightness/contrast/saturate`) para lograr el mismo look oscuro sin depender de una clave externa. También se ajustó `lib/tiempo.ts` para mostrar "hace X años" en vez de "hace 93 meses" en eventos antiguos (los volcanes Sangay/Reventador en los datos reales de EONET tienen fechas de 2019), tras verlo en pantalla.
+
+**Verificación:** `npx tsc --noEmit` y `npm run build` pasan sin errores. Se probó en el navegador contra datos reales (METAR, EONET, NASA POWER); el mapa, la lista de eventos, el reloj Zulu y el gráfico cargan y se actualizan correctamente. No se hizo commit/push todavía: pendiente de la URL del repositorio de GitHub.
+
+---
+
+## Paso 8 — Tactical HUD: paleta negra, mapa táctico, osciloscopio y briefing automático
+
+**Prompt:**
+```
+(Continuación del rediseño "panel de operaciones ATC": llevar la estética a un HUD táctico
+de verdad — paleta negra, tipografía monoespaciada, esquinas cuadradas, mapa con estaciones
+parpadeantes y tooltips neón, gráfico de clima estilo osciloscopio con detección de anomalías,
+un componente de "análisis táctico" con un briefing automático, y la foto del cielo con efecto
+de escaneo y telemetría del modelo. Esta sesión se cortó por límite de ventana de contexto a
+mitad del trabajo; se retomó en una sesión nueva leyendo BITACORA.md y el estado real de los
+archivos para continuar desde donde quedó.)
+```
+
+**Resumen:** Al recuperar la sesión se verificó con `git status`, `tsc` y `npm run build` que la primera mitad de este paso ya estaba aplicada en el código (no se había alcanzado a documentar en esta bitácora antes del corte): paleta negra/mono (`--background:#000`, `--font-geist-mono` como fuente global), `* { border-radius: 0 !important }` para esquinas cuadradas, clase `.panel` con recorte diagonal y esquinas técnicas, `app/api/metar/aeropuertos/route.ts` (METAR de SELT y SEQM en una sola llamada), estaciones parpadeantes en `MapaEventos.tsx` (clase `.parpadeo`) con tooltip neón (`.leaflet-tooltip` con borde y glow cian), tiles oscuros vía filtro CSS (`.mapa-oscuro`) y el catálogo de 14 categorías EONET en `lib/eonetCategorias.ts`.
+
+A partir de ahí se completó lo que faltaba:
+- `lib/anomalia.ts`: detección de anomalías por z-score (umbral 1.5 desviaciones estándar) sobre las series de viento y humedad de NASA POWER.
+- `components/GraficoClima.tsx`: de `AreaChart` con degradado a `LineChart` tipo osciloscopio (grid táctico, trazos netos sin animación, colores `--acento`/`--cian`), con marcadores pulsantes rojos sobre los puntos que la función de anomalías detecta, chip de conteo de anomalías y lista de detalle (día, campo, valor, σ).
+- `lib/briefing.ts` + `components/AnalisisTactico.tsx`: un componente nuevo que hace sus propios fetch a `/api/metar`, `/api/eventos` y `/api/clima` (seguro ante fallos parciales, igual que el resto del panel), calcula categoría de vuelo, alerta de tormenta, evento EONET más cercano (distancia/rumbo con `lib/geo.ts`) y anomalías climáticas, y compone un "briefing táctico" de texto en pantalla estilo terminal (revelado línea por línea con cursor parpadeante). Se etiquetó explícitamente como "generado por reglas locales, no es un LLM real" para no sugerir que hay una llamada a un modelo de lenguaje donde no la hay.
+- `components/FotoCielo.tsx`: la vista previa de la imagen aplica la clase `.escaneo-ia` (barrido cian) mientras se clasifica, y al terminar se muestra un bloque de telemetría con datos medidos de verdad (tiempo de inferencia con `performance.now()`, dimensiones reales de la imagen, peso en KB, número de clases devueltas) — nada inventado, solo instrumentado.
+- `app/page.tsx`: se insertó `<AnalisisTactico />` entre la sección de eventos y el gráfico de clima.
+- `README.md`: se agregó la sección "Madurez tecnológica de IA en Ecuador", una reflexión sin estadísticas inventadas sobre cómo este proyecto (un modelo de Azure Custom Vision entrenado por un desarrollador local) refleja la forma más realista en que la IA está entrando hoy a instituciones ecuatorianas.
+
+**Verificación:** `npm run lint`, `npx tsc --noEmit` y `npm run build` pasan sin errores ni warnings. El tooling de previsualización de esta sesión no tiene acceso a la carpeta `cielo-claro/` (vive fuera de la raíz de proyecto configurada), así que se verificó levantando `next dev` manualmente y consultando por HTTP: el HTML inicial renderiza los tres estados de carga (`Cargando METAR`, `Cargando eventos`, `Cargando clima`, `Generando análisis táctico`) sin errores de servidor, y las 4 rutas de API (`/api/metar`, `/api/metar/aeropuertos`, `/api/eventos`, `/api/clima`) responden con datos reales. Sigue pendiente el commit/push: se necesita la URL del repositorio de GitHub que el usuario mencionó tener lista.
+
+---

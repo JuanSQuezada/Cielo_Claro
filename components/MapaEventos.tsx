@@ -1,80 +1,114 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { MapContainer, TileLayer, CircleMarker, Popup } from "react-leaflet";
-import { COORDENADAS_LATACUNGA } from "@/lib/config";
-import { EventoEonet } from "@/lib/tipos";
+import { MapContainer, TileLayer, Circle, Marker, Popup, Tooltip } from "react-leaflet";
+import L from "leaflet";
+import { COORDENADAS_LATACUNGA, COORDENADAS_AEROPUERTOS } from "@/lib/config";
+import { EventoEonet, Metar } from "@/lib/tipos";
+import { categoriaDe } from "@/lib/eonetCategorias";
+import { calcularCategoria, COLOR_CATEGORIA } from "@/lib/categoriaVuelo";
 
-const COLOR_CATEGORIA: Record<string, string> = {
-  wildfires: "#f97316",
-  volcanoes: "#ef4444",
-  severeStorms: "#3b82f6",
-  floods: "#06b6d4",
-};
+const ANILLOS_KM = [50, 150, 300];
 
-function colorDeCategoria(id: string) {
-  return COLOR_CATEGORIA[id] ?? "#a3a3a3";
+function iconoEvento(categoriaId: string, seleccionado: boolean) {
+  const { color, icono } = categoriaDe(categoriaId);
+  const tamano = seleccionado ? 32 : 24;
+  return L.divIcon({
+    className: "",
+    html: `<div style="
+      width:${tamano}px;height:${tamano}px;
+      background:${color}22;border:2px solid ${color};
+      display:flex;align-items:center;justify-content:center;
+      font-size:${tamano - 14}px;
+      box-shadow:0 0 ${seleccionado ? "14px" : "4px"} ${color};
+      transition:all .15s ease;
+    ">${icono}</div>`,
+    iconSize: [tamano, tamano],
+    iconAnchor: [tamano / 2, tamano / 2],
+  });
 }
 
-export default function MapaEventos() {
-  const [eventos, setEventos] = useState<EventoEonet[]>([]);
-  const [error, setError] = useState<string | null>(null);
-  const [cargando, setCargando] = useState(true);
+function iconoAeropuerto(id: string, color: string) {
+  return L.divIcon({
+    className: "",
+    html: `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;">
+      <div class="parpadeo" style="width:20px;height:20px;border:2px solid ${color};box-shadow:0 0 10px ${color};"></div>
+      <span style="font-family:ui-monospace,monospace;font-size:10px;letter-spacing:.04em;color:${color};background:rgba(0,0,0,0.75);padding:1px 4px;border:1px solid ${color};">${id}</span>
+    </div>`,
+    iconSize: [60, 42],
+    iconAnchor: [30, 10],
+  });
+}
 
-  useEffect(() => {
-    fetch("/api/eventos")
-      .then(async (res) => {
-        const datos = await res.json();
-        if (!res.ok) throw new Error(datos.error ?? "Error al consultar EONET");
-        setEventos(datos);
-      })
-      .catch((err) => setError(err.message))
-      .finally(() => setCargando(false));
-  }, []);
+type Props = {
+  eventos: EventoEonet[];
+  seleccionado: string | null;
+  onSeleccionar: (id: string) => void;
+  aeropuertos?: (Metar & { icaoId: string })[];
+};
 
-  if (cargando) {
-    return <div className="panel p-4 text-sm text-[var(--texto-tenue)]">Cargando eventos…</div>;
-  }
-
-  if (error) {
-    return <div className="panel p-4 text-sm text-red-300">No se pudo cargar el mapa: {error}</div>;
-  }
+export default function MapaEventos({ eventos, seleccionado, onSeleccionar, aeropuertos = [] }: Props) {
+  const centro: [number, number] = [COORDENADAS_LATACUNGA.lat, COORDENADAS_LATACUNGA.lon];
 
   return (
-    <div className="panel p-4 space-y-3">
-      <h2 className="font-semibold">Eventos naturales activos</h2>
-      <div className="h-80 rounded-xl overflow-hidden">
-        <MapContainer
-          center={[COORDENADAS_LATACUNGA.lat, COORDENADAS_LATACUNGA.lon]}
-          zoom={6}
-          scrollWheelZoom={false}
-          style={{ height: "100%", width: "100%" }}
-        >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+    <div className="h-[28rem] overflow-hidden radar-grid border border-[var(--borde)]">
+      <MapContainer center={centro} zoom={6} scrollWheelZoom={false} style={{ height: "100%", width: "100%" }}>
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          className="mapa-oscuro"
+        />
+
+        {ANILLOS_KM.map((km) => (
+          <Circle
+            key={km}
+            center={centro}
+            radius={km * 1000}
+            pathOptions={{ color: "#22e5ff", weight: 1, fillOpacity: 0, dashArray: "4 6", opacity: 0.4 }}
           />
-          {eventos.map((evento) => {
-            const punto = evento.geometry[evento.geometry.length - 1];
-            if (!punto || punto.coordinates.length < 2) return null;
-            const [lon, lat] = punto.coordinates;
-            const categoria = evento.categories[0]?.id ?? "otro";
-            return (
-              <CircleMarker
-                key={evento.id}
-                center={[lat, lon]}
-                radius={8}
-                pathOptions={{ color: colorDeCategoria(categoria), fillOpacity: 0.7 }}
-              >
-                <Popup>{evento.title}</Popup>
-              </CircleMarker>
-            );
-          })}
-        </MapContainer>
-      </div>
-      {eventos.length === 0 && (
-        <p className="text-sm text-[var(--texto-tenue)]">Sin eventos abiertos en la zona.</p>
-      )}
+        ))}
+        <Circle center={centro} radius={4000} pathOptions={{ color: "#39ff6a", weight: 2, fillOpacity: 0.25 }} />
+
+        {aeropuertos.map((metar) => {
+          const coords = COORDENADAS_AEROPUERTOS[metar.icaoId];
+          if (!coords) return null;
+          const categoria = calcularCategoria(metar.visib, metar.clouds);
+          const color = COLOR_CATEGORIA[categoria];
+          return (
+            <Marker
+              key={metar.icaoId}
+              position={[coords.lat, coords.lon]}
+              icon={iconoAeropuerto(metar.icaoId, color)}
+              zIndexOffset={1000}
+            >
+              <Tooltip direction="top" offset={[0, -20]}>
+                {metar.icaoId} · {categoria} · VIENTO {metar.wdir === "VRB" ? "VRB" : `${metar.wdir}°`}/{metar.wspd}KT ·
+                VIS {metar.visib}MI
+              </Tooltip>
+            </Marker>
+          );
+        })}
+
+        {eventos.map((evento) => {
+          const punto = evento.geometry[evento.geometry.length - 1];
+          if (!punto || punto.coordinates.length < 2) return null;
+          const [lon, lat] = punto.coordinates;
+          const categoriaId = evento.categories[0]?.id ?? "otro";
+          const estaSeleccionado = evento.id === seleccionado;
+          return (
+            <Marker
+              key={evento.id}
+              position={[lat, lon]}
+              icon={iconoEvento(categoriaId, estaSeleccionado)}
+              eventHandlers={{ click: () => onSeleccionar(evento.id) }}
+            >
+              <Tooltip direction="top" offset={[0, -14]}>
+                {evento.title}
+              </Tooltip>
+              <Popup>{evento.title}</Popup>
+            </Marker>
+          );
+        })}
+      </MapContainer>
     </div>
   );
 }

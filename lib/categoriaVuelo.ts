@@ -42,10 +42,10 @@ export function calcularCategoria(visib: string, clouds: Nube[]): CategoriaVuelo
 }
 
 export const COLOR_CATEGORIA: Record<CategoriaVuelo, string> = {
-  VFR: "#22c55e",
-  MVFR: "#3b82f6",
-  IFR: "#ef4444",
-  LIFR: "#d946ef",
+  VFR: "#39ff6a",
+  MVFR: "#ffb000",
+  IFR: "#ff2340",
+  LIFR: "#ff2340",
 };
 
 export function hayTormenta(rawOb: string): boolean {

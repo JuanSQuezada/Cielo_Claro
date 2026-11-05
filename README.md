@@ -40,6 +40,14 @@ Las 3 APIs externas de NOAA/NASA se consumen únicamente desde `app/api/*` porqu
 - [NASA EONET](https://eonet.gsfc.nasa.gov/docs/v3) — eventos naturales activos.
 - Azure Custom Vision (modelo "Red Neuronal Cielo" de Steve) — clasificación de fotos del cielo.
 
+## Madurez tecnológica de IA en Ecuador
+
+Este proyecto es, en pequeño, un retrato del momento actual de la IA aplicada en Ecuador: el modelo de clasificación de cielos no salió de un laboratorio de big tech, sino de Azure Custom Vision entrenado por un desarrollador local (Steve) en un flujo de etiquetar fotos y lanzar un entrenamiento administrado, sin escribir una sola línea de arquitectura de red neuronal. Esa es, hoy, la vía más realista por la que la IA entra a instituciones ecuatorianas: no investigación fundacional, sino adopción pragmática de servicios ya entrenables (visión por computador, modelos de lenguaje vía API) integrados a procesos existentes.
+
+El ecosistema todavía es incipiente comparado con la región (Brasil, Chile o Colombia concentran más inversión y más programas públicos de IA), pero hay señales concretas de avance: universidades como la Escuela Politécnica Nacional, la USFQ o Yachay Tech ofrecen investigación y formación en IA/ciencia de datos, y cada vez hay más equipos técnicos locales — como el que entrenó el modelo usado aquí — capaces de llevar un modelo de visión o de lenguaje de cero a producción en días, no meses. Lo que todavía falta es infraestructura pública de datos abiertos (este mismo panel depende enteramente de APIs de NOAA y NASA, no de datos locales equivalentes) y más casos de uso en sectores críticos como aviación, agricultura o gestión de riesgos, donde la disponibilidad de estaciones meteorológicas y sensores locales sigue siendo escasa.
+
+En ese sentido, "Cielo Claro" funciona también como prueba de concepto: con herramientas de IA accesibles (Azure Custom Vision, un asistente de código) y datos públicos internacionales, es posible construir en menos de una hora una herramienta de apoyo a decisiones operativas reales para un aeropuerto ecuatoriano.
+
 ## Cómo correrlo
 
 ```bash

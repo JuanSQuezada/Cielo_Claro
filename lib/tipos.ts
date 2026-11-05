@@ -18,13 +18,23 @@ export type Metar = {
 
 export type CategoriaVuelo = "VFR" | "MVFR" | "IFR" | "LIFR";
 
+export type FuenteEonet = {
+  id: string;
+  url: string;
+};
+
 export type EventoEonet = {
   id: string;
   title: string;
+  description?: string | null;
+  closed?: string | null;
   categories: { id: string; title: string }[];
+  sources?: FuenteEonet[];
   geometry: {
     date: string;
     coordinates: number[];
+    magnitudeValue?: number | null;
+    magnitudeUnit?: string | null;
   }[];
 };
 
