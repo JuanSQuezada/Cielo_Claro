@@ -178,3 +178,30 @@ A partir de ahí se completó lo que faltaba:
 **Verificación:** `npm run lint`, `npx tsc --noEmit` y `npm run build` pasan sin errores ni warnings. El tooling de previsualización de esta sesión no tiene acceso a la carpeta `cielo-claro/` (vive fuera de la raíz de proyecto configurada), así que se verificó levantando `next dev` manualmente y consultando por HTTP: el HTML inicial renderiza los tres estados de carga (`Cargando METAR`, `Cargando eventos`, `Cargando clima`, `Generando análisis táctico`) sin errores de servidor, y las 4 rutas de API (`/api/metar`, `/api/metar/aeropuertos`, `/api/eventos`, `/api/clima`) responden con datos reales. Sigue pendiente el commit/push: se necesita la URL del repositorio de GitHub que el usuario mencionó tener lista.
 
 ---
+
+## Paso 9 — Commit, push y verificación del deploy en Vercel
+
+**Prompt:**
+```
+ya tengo el enlace de mi github, así que crealo subelo a la nube y avísame cuando esté listo
+```
+```
+revisa como tal las actualizaciones del proyecto por que ya está desplegado en vercel
+entones solo para que estés al día
+```
+```
+claro, haber en sí en el repo de github ya está puesto eso: https://github.com/JuanSQuezada/Cielo_Claro
+y tiene un readmi unclusive
+https://cielo-claro.vercel.app/
+```
+
+**Resumen:** Se confirmó con el usuario que el repositorio de GitHub ya está creado y es **privado** (relevante porque `lib/config.ts` trae la clave de predicción de Azure en texto plano). Se agregó el remoto `origin` → `https://github.com/JuanSQuezada/Cielo_Claro.git`, se hizo commit de todo el trabajo del Paso 8 (27 archivos) y `git push -u origin main` contra un repo remoto vacío (sin conflictos).
+
+El usuario reportó que el proyecto ya estaba desplegado en Vercel (`https://cielo-claro.vercel.app/`, deploy automático vía integración GitHub↔Vercel, sin `.vercel/` ni `vercel.json` locales porque no hizo falta configuración extra). Se hizo un smoke test real contra producción:
+- `GET /` → 200 OK, HTML inicial renderiza los estados de carga de los 5 componentes cliente sin errores de servidor.
+- `GET /api/metar`, `/api/metar/aeropuertos`, `/api/eventos`, `/api/clima` → 200 OK con datos reales de NOAA/NASA.
+- `POST /api/clasificar` con una foto de prueba real → 200 OK, el modelo de Steve respondió con las 4 predicciones ordenadas — confirma que la clave de Azure sigue activa y que no hacía falta ninguna variable de entorno en Vercel (al estar hardcodeada en `lib/config.ts`).
+
+Se agregó el enlace de la demo en vivo al encabezado de `README.md`, cumpliendo el entregable de RETO.md ("Un link público y un repositorio en GitHub").
+
+---

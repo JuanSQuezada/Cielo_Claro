@@ -2,6 +2,8 @@
 
 Panel web para evaluar si las condiciones son seguras para volar sobre Latacunga (aeropuerto SELT), construido para el reto de práctica estilo Space Apps descrito en [RETO.md](./RETO.md).
 
+**Demo en vivo:** [cielo-claro.vercel.app](https://cielo-claro.vercel.app/)
+
 Construido con Claude Code siguiendo la secuencia de prompts documentada en [BITACORA.md](./BITACORA.md).
 
 ## Qué hace
