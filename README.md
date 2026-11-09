@@ -12,7 +12,7 @@ Construido con Claude Code siguiendo la secuencia de prompts documentada en [BIT
 - Alerta si el METAR trae nubes de tormenta (CB) o tormenta eléctrica (TS).
 - Ubica en un mapa los eventos naturales activos cerca de Ecuador (incendios, volcanes, etc.).
 - Grafica viento y humedad de Latacunga durante octubre de 2026.
-- Permite subir una foto del cielo y clasificarla con el modelo de IA de Steve (Azure Custom Vision); si el METAR reporta tormenta y la foto se clasifica como "Cielo Lluvioso", lo marca como coincidencia entre ambas fuentes.
+- Permite subir una foto del cielo y clasificarla con el modelo de IA de Steve (Azure Custom Vision); si el METAR reporta tormenta y la foto se clasifica como "Cielo Lluvioso", lo marca como coincidencia entre ambas fuentes. **Nota:** en esta copia pública, esa clasificación corre en "modo demo" (predicciones simuladas, claramente marcadas en pantalla) — ver la sección [Sobre la clave de Azure](#sobre-la-clave-de-azure-modo-demo) más abajo.
 
 Si una fuente de datos falla, solo esa sección muestra el error — el resto del panel sigue funcionando.
 
@@ -66,6 +66,12 @@ npm run build
 npm start
 ```
 
-## Repositorio privado
+¿Primera vez usando Next.js, Node o Git? Sigue [GUIA_INICIO.md](./GUIA_INICIO.md) — está escrita paso a paso, sin asumir experiencia previa.
 
-Este repositorio es privado porque `lib/config.ts` contiene la clave de predicción de Azure. Si quedara en un repo público, GitHub podría detectarla y Microsoft podría desactivarla.
+## Sobre la clave de Azure (modo demo)
+
+`lib/config.ts` trae una clave y un endpoint de Azure Custom Vision **inventados** (no apuntan a ningún recurso real) para que cualquiera pueda clonar este repo y correrlo sin tener que configurar nada. Con esos valores de ejemplo, `app/api/clasificar/route.ts` entra automáticamente en **modo demo**: en vez de llamar a un modelo real, devuelve predicciones de ejemplo con un aviso visible en pantalla ("⚠ Modo demo…"). El resto del panel (METAR, mapa de eventos, clima) siempre usa datos reales de NOAA/NASA, sin ningún modo demo.
+
+`lib/config.ts` tiene un comentario explicando por qué esa clave está hardcodeada (mala práctica, hecha a propósito por motivos didácticos) y cómo se manejaría correctamente en un proyecto real (variables de entorno, `.env.local` en desarrollo y el panel de variables de entorno del hosting en producción — que es justo lo que usa el deploy real en Vercel, mediante `process.env.AZURE_PREDICTION_KEY`). Vale la pena leerlo.
+
+Si quieres conectar tu propio modelo de Azure Custom Vision, reemplaza esos dos valores en `lib/config.ts` por los tuyos (ver [GUIA_INICIO.md](./GUIA_INICIO.md)).

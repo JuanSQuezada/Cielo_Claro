@@ -63,6 +63,8 @@ Responde un objeto con `events: []`.
 
 ## 4. Azure Custom Vision — clasificación (modelo de Steve)
 
+> Nota: el endpoint de abajo es un ejemplo inventado para esta versión pública del repo (ver el comentario en `lib/config.ts`). La forma de la URL y de la respuesta sí son reales — se documentaron probando el recurso real de Steve antes de sanitizar el repositorio.
+
 `POST https://cieloclaroeducativo-prediction.cognitiveservices.azure.com/customvision/v3.0/Prediction/a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7/classify/iterations/Red%20Neuronal%20Cielo/url`
 
 Para envío de archivo (lo que usa `FotoCielo`), se usa la variante `/image` en vez de `/url`, con:

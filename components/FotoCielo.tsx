@@ -31,6 +31,7 @@ export default function FotoCielo() {
   const [predicciones, setPredicciones] = useState<Prediccion[] | null>(null);
   const [telemetria, setTelemetria] = useState<Telemetria | null>(null);
   const [coinciden, setCoinciden] = useState(false);
+  const [modoDemo, setModoDemo] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [arrastrando, setArrastrando] = useState(false);
@@ -41,6 +42,7 @@ export default function FotoCielo() {
     setPredicciones(null);
     setTelemetria(null);
     setCoinciden(false);
+    setModoDemo(null);
     setVistaPrevia(URL.createObjectURL(archivo));
 
     const inicio = performance.now();
@@ -62,6 +64,9 @@ export default function FotoCielo() {
 
       const lista: Prediccion[] = datosClasificar.predicciones;
       setPredicciones(lista);
+      if (datosClasificar.demo) {
+        setModoDemo(datosClasificar.mensaje ?? "Modo demo: predicciones simuladas.");
+      }
       setTelemetria({
         tiempoMs: Math.round(performance.now() - inicio),
         tamanoKb: Math.round(archivo.size / 1024),
@@ -140,6 +145,15 @@ export default function FotoCielo() {
       )}
 
       {error && <p className="text-sm text-red-300">{error}</p>}
+
+      {modoDemo && (
+        <p
+          className="text-xs font-mono px-3 py-2"
+          style={{ color: "var(--ambar)", border: "1px solid var(--ambar)", background: "rgba(255,176,0,0.08)" }}
+        >
+          ⚠ {modoDemo}
+        </p>
+      )}
 
       {predicciones && predicciones.length > 0 && (
         <div className="space-y-3">
